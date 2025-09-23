@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive 3-Option Quiz (Text + Image Mixed)</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #111827; --text: #e5e7eb; --muted:#94a3b8; --ok:#22c55e; --err:#ef4444; --pri:#3b82f6;
+    }
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:#0f172a; color:var(--text); min-height:100vh; margin:0; display:grid; place-items:center; padding:24px}
+    .app{width:100%; max-width:900px; background:#111827; border-radius:16px; box-shadow:0 12px 30px rgba(0,0,0,.45); overflow:hidden}
+    header, footer{display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid rgba(255,255,255,.08)}
+    footer{border-top:1px solid rgba(255,255,255,.08); border-bottom:none}
+    .title{font-weight:700}
+    .muted{color:var(--muted)}
+    main{padding:20px}
+    .question{font-size:clamp(18px,2.4vw,24px); font-weight:650}
+    .note{color:var(--muted); margin-top:4px}
+    .grid{display:grid; gap:14px; margin-top:16px; grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media (max-width:820px){.grid{grid-template-columns:1fr}}
+    .option{position:relative; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04); border-radius:14px; cursor:pointer; padding:10px; text-align:left; transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}
+    .option:hover{transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.35)}
+    .thumb{width:100%; aspect-ratio:16/10; object-fit:cover; background:#0b1220; border-radius:10px; border:1px solid rgba(255,255,255,.06); display:block}
+    .label{font-weight:600; margin-top:10px}
+    .option.text-only{display:flex; align-items:center; min-height:64px; padding:14px 16px}
+    .option.text-only .label{margin:0; font-size:16px}
+    .option[data-state="correct"]{border-color:rgba(34,197,94,.9); box-shadow:0 0 0 3px rgba(34,197,94,.18) inset}
+    .option[data-state="wrong"]{border-color:rgba(239,68,68,.9); box-shadow:0 0 0 3px rgba(239,68,68,.18) inset}
+    .row{display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:16px}
+    .pill{padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); color:var(--muted); font-size:12px}
+    .btn{appearance:none; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
+    .btn.primary{background:var(--pri); color:#fff}
+    .btn.secondary{background:rgba(255,255,255,.08); color:var(--text); border:1px solid rgba(255,255,255,.08)}
+    .feedback{margin-top:10px; font-weight:700}
+    .correct{color:var(--ok)}
+    .incorrect{color:var(--err)}
+    .hide{display:none!important}
+    .progress{width:220px; height:10px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden}
+    .progress>div{height:100%; width:0%; background:linear-gradient(90deg,#60a5fa,#34d399); transition:width .3s ease}
+  </style>
+</head>
+<body>
+  <div class="app" role="application">
+    <header>
+      <div>
+        <div class="title">Mixed Quiz (3 options)</div>
+        <div class="muted" id="progressLabel">Question 1</div>
+      </div>
+      <div class="progress" aria-label="Quiz progress"><div id="progressBar"></div></div>
+    </header>
+
+    <main>
+      <div id="card">
+        <div class="question" id="questionText">Loading...</div>
+        <div class="note" id="questionNote"></div>
+        <div class="grid" id="optionsGrid" role="group" aria-label="Answers"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="row">
+          <span class="pill" id="scorePill">Score: 0</span>
+          <div>
+            <button class="btn secondary" id="skipBtn">Skip</button>
+            <button class="btn primary" id="nextBtn" disabled>Next</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="result" class="hide">
+        <h2 style="margin:0 0 8px 0">All done! 🎉</h2>
+        <p class="muted" id="resultSummary"></p>
+        <div class="row" style="margin-top: 16px;">
+          <button class="btn primary" id="restartBtn">Restart Quiz</button>
+          <button class="btn secondary" id="reviewBtn">Review Answers</button>
+        </div>
+        <div id="review" class="hide" style="margin-top:14px"></div>
+      </div>
+    </main>
+
+    <footer>
+      <span class="muted">Tip: Click or use 1/2/3 keys to answer.</span>
+      <span class="muted">Good luck</span>
+    </footer>
+  </div>
+
+  <script>
+    // Mix text-only and image options freely. Each question still has exactly 3 options.
+
+    const IMG = {
+      A: "https://drive.google.com/thumbnail?id=1n07IHNppasGEmRyBP4kdBX2J2_PGdXXz&sz=w1200",
+      B: "https://drive.google.com/thumbnail?id=1pQZI_IeY3YgkdfUSTJM0lY_CXNdDHy3-&sz=w1200",
+      C: "https://drive.google.com/thumbnail?id=1R3AkfHe4nak7ONzL_REZ9e3428OfxvQk&sz=w1200",
+      RX: "https://drive.google.com/thumbnail?id=1VQLHcf9FrXXUmISBYua0C-q5LkC2ZoKN&sz=w1200",
+      CT: "https://drive.google.com/thumbnail?id=19czAHQoUPVtODiOgkvbcOumonGYMErhP&sz=w1200",
+      MRI: "https://drive.google.com/thumbnail?id=1KSNbC2quearG4fpIG1poN5heBG3lcTTX&sz=w1200",
+    };
+
+    const QUESTIONS = [
+      {
+        prompt: "Quale di queste tecniche usa radiazioni ionizzanti?",
+        note: "Confronto tra TC, RM ed ecografia",
+        options: [
+          { text: "Risonanza Magnetica (RM)", correct: false },
+          { text: "Tomografia Computerizzata (TC)", correct: true },
+          { text: "Ecografia", correct: false },
+        ]
+      },
+      {
+        prompt: "In RM, l’intensità del campo magnetico si misura in…",
+        note: "Unità di misura",
+        options: [
+          { text: "Gray (Gy)", correct: false },
+          { text: "Tesla (T)", correct: true },
+          { text: "Sievert (Sv)", correct: false },
+        ]
+      },
+       {
+        prompt: "Il Gray (Gy) misura…",
+        note: "Dosimetria di base",
+        options: [
+          { text: "La dose assorbita", correct: true },
+          { text: "L’attività di una sorgente", correct: false },
+          { text: "La dose efficace", correct: false },
+        ]
+      },
+      {
+        prompt: "Quale delle seguenti immagini è una TC?",
+        note: "Image options example",
+        options: [
+          { text: "A", img: IMG.A, correct: true },
+          { text: "B", img: IMG.B, correct: false },
+          { text: "C", img: IMG.C, correct: false },
+        ]
+      },
+      {
+        prompt: "In ecografia, l’immagine si ottiene grazie a…",
+        note: "Principio fisico",
+        options: [
+          { text: "Onde acustiche ad alta frequenza", correct: true },
+          { text: "Raggi X", correct: false },
+          { text: "Particelle beta", correct: false },
+        ]
+      },
+       {
+        prompt: "In PET si rivelano principalmente…",
+        note: "Nucleare in medicina",
+        options: [
+          { text: "Coppie di fotoni gamma da annichilazione positrone-elettrone", correct: true },
+          { text: "Onde ultrasonore riflesse", correct: false },
+          { text: "Emissione di luce visibile dai tessuti", correct: false },
+        ]
+      },
+      {
+        prompt: "Quale di questi esami espone tipicamente alla dose efficace più bassa?",
+        note: "Ordini di grandezza (indicativi)",
+        options: [
+          { text: "Radiografia del torace", correct: true },
+          { text: "TC addome", correct: false },
+          { text: "PET/TC corpo intero", correct: false },
+        ]
+      },
+        {
+        prompt: "Quale delle seguenti immagini è stata acquisita tramite raggi-X?",
+        note: "Image options example 2",
+        options: [
+          { text: "A", img: IMG.RX, correct: true },
+          { text: "B", img: IMG.CT, correct: false },
+          { text: "C", img: IMG.MRI, correct: false },
+        ]
+      },
+      {
+        prompt: "Nella TC, l’unità di misura dell’attenuazione è…",
+        note: "Scala di densità",
+        options: [
+          { text: "Unità Hounsfield (HU)", correct: true },
+          { text: "Unità Tesla (T)", correct: false },
+          { text: "Unità Becquerel (Bq)", correct: false },
+        ]
+      },
+      {
+        prompt: "Quale mezzo di contrasto è tipico della RM?",
+        note: "Contrasti in imaging",
+        options: [
+          { text: "Agenti a base di gadolinio", correct: true },
+          { text: "Agenti a base di iodio", correct: false },
+          { text: "Solfato di bario", correct: false },
+        ]
+      },
+      {
+        prompt: "Perché si usano schermature (es. grembiuli) in radiografia?",
+        note: "Protezione dei tessuti sensibili",
+        options: [
+          { text: "Per ridurre la dose a organi sensibili vicini all’area esaminata", correct: true },
+          { text: "Per aumentare il contrasto dell’immagine", correct: false },
+          { text: "Per velocizzare l’acquisizione", correct: false },
+        ]
+      },
+      {
+        prompt: "Quale è una controindicazione assoluta alla RM?",
+        note: "Sicurezza in RM",
+        options: [
+          { text: "Pacemaker non compatibile con RM", correct: true },
+          { text: "Protesi in titanio", correct: false },
+          { text: "Otturazioni dentarie", correct: false },
+        ]
+      },
+
+    ];
+
+    // --- State ---
+    let index = 0; let score = 0; let locked = false; const history = [];
+
+    // --- Elements ---
+    const progressLabel = document.getElementById('progressLabel');
+    const progressBar   = document.getElementById('progressBar');
+    const questionText  = document.getElementById('questionText');
+    const questionNote  = document.getElementById('questionNote');
+    const optionsGrid   = document.getElementById('optionsGrid');
+    const feedbackEl    = document.getElementById('feedback');
+    const nextBtn       = document.getElementById('nextBtn');
+    const skipBtn       = document.getElementById('skipBtn');
+    const scorePill     = document.getElementById('scorePill');
+    const result        = document.getElementById('result');
+    const card          = document.getElementById('card');
+    const resultSummary = document.getElementById('resultSummary');
+    const restartBtn    = document.getElementById('restartBtn');
+    const reviewBtn     = document.getElementById('reviewBtn');
+    const reviewBox     = document.getElementById('review');
+
+    function shuffle(arr){return arr.map(v=>({v,r:Math.random()})).sort((a,b)=>a.r-b.r).map(({v})=>v)}
+
+    function updateProgress(){
+      progressLabel.textContent = `Question ${index+1} of ${QUESTIONS.length}`;
+      progressBar.style.width = `${(index/QUESTIONS.length)*100}%`;
+      scorePill.textContent = `Score: ${score}`;
+    }
+
+    function renderQuestion(){
+      locked = false; feedbackEl.textContent = ''; nextBtn.disabled = true; optionsGrid.innerHTML = '';
+      const q = QUESTIONS[index];
+      questionText.textContent = q.prompt; questionNote.textContent = q.note || '';
+
+      const opts = shuffle(q.options.map((o,i)=>({...o, idx:i})));
+      opts.forEach((opt, position)=>{
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option' + (opt.img ? '' : ' text-only');
+        btn.setAttribute('data-idx', opt.idx);
+        btn.setAttribute('data-correct', !!opt.correct);
+        btn.innerHTML = opt.img
+          ? `<img class="thumb" src="${opt.img}" alt="${opt.text}"><div class="label">${position+1}. ${opt.text}</div>`
+          : `<div class="label">${position+1}. ${opt.text}</div>`;
+        btn.addEventListener('click', ()=>selectOption(btn));
+        optionsGrid.appendChild(btn);
+      });
+      updateProgress();
+    }
+
+    function selectOption(btn){
+      if(locked) return; locked = true;
+      const isCorrect = btn.getAttribute('data-correct') === 'true';
+      // decorate all options
+      optionsGrid.querySelectorAll('.option').forEach(el=>{
+        const corr = el.getAttribute('data-correct')==='true';
+        el.dataset.state = corr ? 'correct' : (el===btn ? 'wrong' : '');
+      });
+
+      if(isCorrect){feedbackEl.textContent='Correct!'; feedbackEl.className='feedback correct'; score++;}
+      else{const q=QUESTIONS[index]; const corrLabel=q.options.find(o=>o.correct)?.text||'the correct answer'; feedbackEl.textContent=`Not quite. Correct: ${corrLabel}`; feedbackEl.className='feedback incorrect';}
+
+      history.push({qIndex:index, selected:Number(btn.getAttribute('data-idx')), correct:isCorrect});
+      scorePill.textContent = `Score: ${score}`; nextBtn.disabled = false;
+      progressBar.style.width = `${((index+1)/QUESTIONS.length)*100}%`;
+    }
+
+    function nextQuestion(){ if(index < QUESTIONS.length-1){ index++; renderQuestion(); } else { showResult(); } }
+    function skipQuestion(){ if(locked) return; history.push({qIndex:index, selected:null, correct:false, skipped:true}); nextQuestion(); }
+
+    function showResult(){
+      card.classList.add('hide'); result.classList.remove('hide');
+      resultSummary.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      progressLabel.textContent = 'Quiz complete'; progressBar.style.width = '100%';
+    }
+
+    function restart(){ index=0; score=0; locked=false; history.length=0; card.classList.remove('hide'); result.classList.add('hide'); renderQuestion(); }
+
+    function renderReview(){
+      const parts = history.map((h,i)=>{ const q=QUESTIONS[h.qIndex]; const corrIdx=q.options.findIndex(o=>o.correct); const selText=h.selected==null?'—':q.options[h.selected]?.text; const corrText=q.options[corrIdx]?.text; const status=h.correct?'✅':(h.skipped?'⏭️':'❌'); return `<div style="padding:10px 12px; border:1px solid rgba(255,255,255,.08); border-radius:12px; margin-bottom:10px;">\n<div style=\"font-weight:700\">Q${i+1}. ${q.prompt}</div>\n<div class=\"muted\">Your answer: <b>${selText}</b> • Correct: <b>${corrText}</b> ${status}</div></div>`; }).join('');
+      reviewBox.innerHTML = parts || '<div class="muted">No answers to review.</div>'; reviewBox.classList.remove('hide');
+    }
+
+    // Keyboard: 1/2/3, Enter, S
+    document.addEventListener('keydown', (e)=>{
+      if(!result.classList.contains('hide')) return;
+      if(['1','2','3'].includes(e.key)){ const idx = Number(e.key)-1; const btn = optionsGrid.querySelectorAll('.option')[idx]; if(btn) btn.click(); }
+      else if(e.key==='Enter'){ if(!nextBtn.disabled) nextBtn.click(); }
+      else if(e.key.toLowerCase()==='s'){ skipBtn.click(); }
+    });
+
+    nextBtn.addEventListener('click', nextQuestion);
+    skipBtn.addEventListener('click', skipQuestion);
+    restartBtn.addEventListener('click', restart);
+    reviewBtn.addEventListener('click', renderReview);
+
+    renderQuestion();
+  </script>
+</body>
+</html>
