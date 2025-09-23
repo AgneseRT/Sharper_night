@@ -134,15 +134,6 @@
   <script>
     // Mix text-only and image options freely. Each question still has exactly 3 options.
 
-    const IMG = {
-      A: "https://drive.google.com/thumbnail?id=1n07IHNppasGEmRyBP4kdBX2J2_PGdXXz&sz=w1200",
-      B: "https://drive.google.com/thumbnail?id=1pQZI_IeY3YgkdfUSTJM0lY_CXNdDHy3-&sz=w1200",
-      C: "https://drive.google.com/thumbnail?id=1R3AkfHe4nak7ONzL_REZ9e3428OfxvQk&sz=w1200",
-      RX: "https://drive.google.com/thumbnail?id=1VQLHcf9FrXXUmISBYua0C-q5LkC2ZoKN&sz=w1200",
-      CT: "https://drive.google.com/thumbnail?id=19czAHQoUPVtODiOgkvbcOumonGYMErhP&sz=w1200",
-      MRI: "https://drive.google.com/thumbnail?id=1KSNbC2quearG4fpIG1poN5heBG3lcTTX&sz=w1200",
-    };
-
     const QUESTIONS = [
       {
         prompt: "Quale di queste tecniche usa radiazioni ionizzanti?",
@@ -175,9 +166,9 @@
         prompt: "Quale delle seguenti immagini è una TC?",
         note: "Image options example",
         options: [
-          { text: "A", img: IMG.A, correct: true },
-          { text: "B", img: IMG.B, correct: false },
-          { text: "C", img: IMG.C, correct: false },
+          { text: "A", img: "A.png", correct: true },
+          { text: "B", img: "B.png", correct: false },
+          { text: "C", img: "C.png", correct: false },
         ]
       },
       {
@@ -211,9 +202,9 @@
         prompt: "Quale delle seguenti immagini è stata acquisita tramite raggi-X?",
         note: "Image options example 2",
         options: [
-          { text: "A", img: IMG.RX, correct: true },
-          { text: "B", img: IMG.CT, correct: false },
-          { text: "C", img: IMG.MRI, correct: false },
+          { text: "A", img: "RX.png", correct: true },
+          { text: "B", img: "CT.png", correct: false },
+          { text: "C", img: "MRI.png", correct: false },
         ]
       },
       {
