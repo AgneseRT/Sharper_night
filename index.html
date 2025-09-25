@@ -6,23 +6,9 @@
   <title>Interactive 3-Option Quiz (Text + Image Mixed)</title>
   <style>
     :root {
-      /* Higher-contrast palette */
-      --bg: #0b0f1a;        /* darker background */
-      --card: #0b1220;      /* darker card */
-      --text: #ffffff;      /* pure white text */
-      --muted: #dbe2ea;     /* brighter muted text */
-      --ok: #22c55e;        /* success */
-      --err: #ef4444;       /* error */
-      --pri: #1d4ed8;       /* stronger blue */
-      --border: rgba(255,255,255,.2);
-      --surface: rgba(255,255,255,.08);
+      --bg:#0b0f1a; --card:#0b1220; --text:#ffffff; --muted:#dbe2ea; --ok:#22c55e; --err:#ef4444; --pri:#1d4ed8; --border:rgba(255,255,255,.2); --surface:rgba(255,255,255,.08);
     }
-
-    /* Optional high-contrast toggle overrides */
-    body.hc{
-      --bg:#000; --card:#000; --text:#fff; --muted:#f3f4f6; --pri:#0ea5e9; --border:rgba(255,255,255,.35); --surface:rgba(255,255,255,.12);
-    }
-
+    body.hc{--bg:#000; --card:#000; --text:#fff; --muted:#f3f4f6; --pri:#0ea5e9; --border:rgba(255,255,255,.35); --surface:rgba(255,255,255,.12);}
     *{box-sizing:border-box}
     html{color-scheme:dark}
     body{
@@ -48,20 +34,16 @@
 
     .option{position:relative; border:1px solid var(--border); background: var(--surface); border-radius:14px; cursor:pointer; padding:12px; text-align:left; transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}
     .option:hover{transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.5)}
-
     .thumb{width:100%; aspect-ratio:16/10; object-fit:cover; background:#0b1220; border-radius:10px; border:1px solid var(--border); display:block}
     .label{font-weight:700; margin-top:10px; font-size:18px}
     .option.text-only{display:flex; align-items:center; min-height:64px; padding:16px}
     .option.text-only .label{margin:0; font-size:18px}
-
     .option:focus-visible{outline:3px solid rgba(14,165,233,.85); outline-offset:2px}
-
     .option[data-state="correct"]{border-color: rgba(34,197,94,.9); box-shadow:0 0 0 3px rgba(34,197,94,.25) inset}
     .option[data-state="wrong"]{border-color: rgba(239,68,68,.9); box-shadow:0 0 0 3px rgba(239,68,68,.25) inset}
 
-    .row{display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:16px}
+    .row{display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap}
     .pill{padding:8px 12px; border-radius:999px; background: rgba(255,255,255,.12); color:var(--muted); font-size:14px; border:1px solid var(--border)}
-
     .btn{appearance:none; border:1px solid var(--border); border-radius:12px; padding:12px 16px; font-weight:800; cursor:pointer}
     .btn.primary{background: var(--pri); color:#fff; border-color: transparent; box-shadow:0 8px 22px rgba(29,78,216,.35)}
     .btn.secondary{background: rgba(255,255,255,.06); color: var(--text)}
@@ -75,23 +57,23 @@
     .progress{width:240px; height:12px; background:#334155; border-radius:999px; overflow:hidden; border:1px solid var(--border)}
     .progress>div{height:100%; width:0%; background:linear-gradient(90deg,#60a5fa,#34d399); transition:width .3s ease}
 
-    /* Small-screen readability boosts */
-    @media (max-width:480px){
-      .label{font-size:18px}
-      .muted{font-size:15px}
-      .btn{padding:14px 18px}
-    }
-
-    /* Contrast toggle button */
     .toggle{display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; background:rgba(255,255,255,.08); border:1px solid var(--border); cursor:pointer; font-weight:700}
+
+    /* Intro card */
+    .intro-card{padding:18px}
+    .choices{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .choice{padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--border); cursor:pointer; font-weight:700}
+    .choice[aria-pressed="true"]{background:rgba(29,78,216,.2); border-color:#60a5fa}
+    .helper{font-size:14px; color:var(--muted); margin-top:6px}
+    .small{font-size:13px; color:var(--muted)}
   </style>
 </head>
 <body>
   <div class="app" role="application">
     <header>
       <div>
-        <div class="title">Mixed Quiz (3 options)</div>
-        <div class="muted" id="progressLabel">Question 1</div>
+        <div class="title">Fondamenti di Fisica Medica</div>
+        <div class="muted" id="progressLabel">Metti alla prova le tue conoscenze</div>
       </div>
       <div style="display:flex; align-items:center; gap:10px;">
         <button id="contrastBtn" class="toggle" title="Toggle high-contrast">High contrast</button>
@@ -100,7 +82,23 @@
     </header>
 
     <main>
-      <div id="card">
+      <!-- INTRO: choose category -->
+      <div id="intro" class="intro-card">
+        <div class="question">Parlaci di te, qual'è il tuo background</div>
+        <div class="helper">Il quiz è totalmente anonimo </div>
+        <div class="choices" role="group" aria-label="Background">
+          <button class="choice" data-cat="Medicine" aria-pressed="false">Medicina</button>
+          <button class="choice" data-cat="STEM" aria-pressed="false">Lauree STEM</button>
+          <button class="choice" data-cat="Other" aria-pressed="false">Altro</button>
+        </div>
+        <div class="row" style="margin-top:16px">
+          <span class="small">Alla fine potrai decidere se inviarci i tuoi risultati o meno</span>
+          <button id="startBtn" class="btn primary" disabled>Start Quiz</button>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div id="card" class="hide">
         <div class="question" id="questionText">Loading...</div>
         <div class="note" id="questionNote"></div>
         <div class="grid" id="optionsGrid" role="group" aria-label="Answers"></div>
@@ -114,26 +112,32 @@
         </div>
       </div>
 
+      <!-- RESULT -->
       <div id="result" class="hide">
         <h2 style="margin:0 0 8px 0">All done! 🎉</h2>
         <p class="muted" id="resultSummary"></p>
+
         <div class="row" style="margin-top: 16px;">
-          <button class="btn primary" id="restartBtn">Restart Quiz</button>
-          <button class="btn secondary" id="reviewBtn">Review Answers</button>
+          <button class="btn primary" id="submitBtn">Submit my results</button>
+          <button class="btn secondary" id="reviewBtn">Review answers</button>
+          <button class="btn secondary" id="restartBtn">Restart quiz</button>
         </div>
+        <p class="small" id="submitStatus" style="margin-top:8px"></p>
+
         <div id="review" class="hide" style="margin-top:14px"></div>
       </div>
     </main>
 
     <footer>
       <span class="muted">Tip: Click or use 1/2/3 keys to answer.</span>
-      <span class="muted">Good luck</span>
+      <span class="muted">Buona Fortuna</span>
     </footer>
   </div>
 
   <script>
-    // Mix text-only and image options freely. Each question still has exactly 3 options.
-
+    // ======= CONFIG: set this to your webhook / Apps Script URL =======
+    const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbx1mTq39QJKmOogs-s9mA-y7oKQHP6jpSEFGw2fOOgKcHWNW7qFnPXN7ulwX44pBt1Edg/exec"; 
+    // ======= QUESTIONS =======
     const QUESTIONS = [
       {
         prompt: "Quale di queste tecniche usa radiazioni ionizzanti?",
@@ -238,18 +242,19 @@
         prompt: "Quale è una controindicazione assoluta alla RM?",
         note: "Sicurezza in RM",
         options: [
-          { text: "Pacemaker non compatibile con RM", correct: true },
+          { text: "Pacemaker", correct: true },
           { text: "Protesi in titanio", correct: false },
           { text: "Otturazioni dentarie", correct: false },
         ]
       },
-
     ];
 
-    // --- State ---
+    // ======= State =======
     let index = 0; let score = 0; let locked = false; const history = [];
+    let participantCategory = null;
+    let currentRun = null; // last completed attempt
 
-    // --- Elements ---
+    // ======= Elements =======
     const progressLabel = document.getElementById('progressLabel');
     const progressBar   = document.getElementById('progressBar');
     const questionText  = document.getElementById('questionText');
@@ -266,15 +271,20 @@
     const reviewBtn     = document.getElementById('reviewBtn');
     const reviewBox     = document.getElementById('review');
     const contrastBtn   = document.getElementById('contrastBtn');
+    const intro         = document.getElementById('intro');
+    const startBtn      = document.getElementById('startBtn');
+    const submitBtn     = document.getElementById('submitBtn');
+    const submitStatus  = document.getElementById('submitStatus');
 
+    // ======= Utils =======
     function shuffle(arr){return arr.map(v=>({v,r:Math.random()})).sort((a,b)=>a.r-b.r).map(({v})=>v)}
-
     function updateProgress(){
       progressLabel.textContent = `Question ${index+1} of ${QUESTIONS.length}`;
       progressBar.style.width = `${(index/QUESTIONS.length)*100}%`;
       scorePill.textContent = `Score: ${score}`;
     }
 
+    // ======= Render =======
     function renderQuestion(){
       locked = false; feedbackEl.textContent = ''; nextBtn.disabled = true; optionsGrid.innerHTML = '';
       const q = QUESTIONS[index];
@@ -299,14 +309,18 @@
     function selectOption(btn){
       if(locked) return; locked = true;
       const isCorrect = btn.getAttribute('data-correct') === 'true';
-      // decorate all options
       optionsGrid.querySelectorAll('.option').forEach(el=>{
         const corr = el.getAttribute('data-correct')==='true';
         el.dataset.state = corr ? 'correct' : (el===btn ? 'wrong' : '');
       });
 
       if(isCorrect){feedbackEl.textContent='Correct!'; feedbackEl.className='feedback correct'; score++;}
-      else{const q=QUESTIONS[index]; const corrLabel=q.options.find(o=>o.correct)?.text||'the correct answer'; feedbackEl.textContent=`Not quite. Correct: ${corrLabel}`; feedbackEl.className='feedback incorrect';}
+      else{
+        const q=QUESTIONS[index];
+        const corrLabel=q.options.find(o=>o.correct)?.text||'the correct answer';
+        feedbackEl.textContent=`Not quite. Correct: ${corrLabel}`;
+        feedbackEl.className='feedback incorrect';
+      }
 
       history.push({qIndex:index, selected:Number(btn.getAttribute('data-idx')), correct:isCorrect});
       scorePill.textContent = `Score: ${score}`; nextBtn.disabled = false;
@@ -316,39 +330,148 @@
     function nextQuestion(){ if(index < QUESTIONS.length-1){ index++; renderQuestion(); } else { showResult(); } }
     function skipQuestion(){ if(locked) return; history.push({qIndex:index, selected:null, correct:false, skipped:true}); nextQuestion(); }
 
+    function renderReview(){
+      const parts = history.map((h,i)=>{
+        const q=QUESTIONS[h.qIndex];
+        const corrIdx=q.options.findIndex(o=>o.correct);
+        const selText=h.selected==null?'—':q.options[h.selected]?.text;
+        const corrText=q.options[corrIdx]?.text;
+        const status=h.correct?'✅':(h.skipped?'⏭️':'❌');
+        return `<div style="padding:10px 12px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px;">
+          <div style="font-weight:800">Q${i+1}. ${q.prompt}</div>
+          <div class="muted">Your answer: <b>${selText}</b> • Correct: <b>${corrText}</b> ${status}</div>
+        </div>`;
+      }).join('');
+      reviewBox.innerHTML = parts || '<div class="muted">No answers to review.</div>';
+      reviewBox.classList.remove('hide');
+    }
+
     function showResult(){
       card.classList.add('hide'); result.classList.remove('hide');
-      resultSummary.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      resultSummary.textContent = `Category: ${participantCategory} • You scored ${score} out of ${QUESTIONS.length}.`;
       progressLabel.textContent = 'Quiz complete'; progressBar.style.width = '100%';
+
+      // Save this attempt locally and keep a handle to it
+      currentRun = saveRun();
+
+      // Reset submit UI for this run
+      submitStatus.textContent = '';
+      submitBtn.disabled = false;
     }
 
-    function restart(){ index=0; score=0; locked=false; history.length=0; card.classList.remove('hide'); result.classList.add('hide'); renderQuestion(); }
-
-    function renderReview(){
-      const parts = history.map((h,i)=>{ const q=QUESTIONS[h.qIndex]; const corrIdx=q.options.findIndex(o=>o.correct); const selText=h.selected==null?'—':q.options[h.selected]?.text; const corrText=q.options[corrIdx]?.text; const status=h.correct?'✅':(h.skipped?'⏭️':'❌'); return `<div style="padding:10px 12px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px;">\n<div style=\"font-weight:800\">Q${i+1}. ${q.prompt}</div>\n<div class=\"muted\">Your answer: <b>${selText}</b> • Correct: <b>${corrText}</b> ${status}</div></div>`; }).join('');
-      reviewBox.innerHTML = parts || '<div class="muted">No answers to review.</div>'; reviewBox.classList.remove('hide');
+    function restart(){
+      // Back to intro to possibly pick a new category; previous attempts remain saved
+      result.classList.add('hide'); reviewBox.classList.add('hide');
+      intro.classList.remove('hide'); card.classList.add('hide');
+      progressLabel.textContent = 'Choose your background to start';
+      progressBar.style.width = '0%';
+      index=0; score=0; locked=false; history.length=0;
+      scorePill.textContent = 'Score: 0';
     }
 
-    // Keyboard: 1/2/3, Enter, S
-    document.addEventListener('keydown', (e)=>{
-      if(!result.classList.contains('hide')) return;
-      if(['1','2','3'].includes(e.key)){ const idx = Number(e.key)-1; const btn = optionsGrid.querySelectorAll('.option')[idx]; if(btn) btn.click(); }
-      else if(e.key==='Enter'){ if(!nextBtn.disabled) nextBtn.click(); }
-      else if(e.key.toLowerCase()==='s'){ skipBtn.click(); }
+    // ======= Persistence =======
+    const STORAGE_KEY = 'quizRuns_v1';
+    function getAllRuns(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch{ return []; } }
+    function setAllRuns(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+
+    function saveRun(){
+      const timestamp = new Date().toISOString();
+      const perQuestion = history.map(h=>{
+        const q = QUESTIONS[h.qIndex];
+        const correctIndex = q.options.findIndex(o=>o.correct);
+        return {
+          qIndex: h.qIndex,
+          prompt: q.prompt,
+          selectedIndex: h.selected,
+          correctIndex,
+          correct: !!h.correct,
+          skipped: !!h.skipped
+        };
+      });
+      const run = {
+        timestamp,
+        category: participantCategory,
+        score,
+        total: QUESTIONS.length,
+        perQuestion
+      };
+      const all = getAllRuns(); all.push(run); setAllRuns(all);
+      return run; // return for submission
+    }
+
+    // ======= Submission (optional webhook) =======
+    function submitResults(run){
+      if(!SUBMIT_URL){
+        alert("No SUBMIT_URL set in the code — configure it to receive results.");
+        return;
+      }
+      submitBtn.disabled = true;
+      submitStatus.textContent = "Submitting...";
+      const payload = {
+        timestamp: run.timestamp,
+        category: run.category,
+        score: run.score,
+        total: run.total,
+        perQuestion: run.perQuestion
+      };
+      fetch(SUBMIT_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+        mode: 'no-cors' // keeps it simple; your endpoint handles CORS
+      }).then(()=>{
+        submitStatus.textContent = "✅ Results submitted!";
+      }).catch(()=>{
+        submitStatus.textContent = "⚠️ Submission failed. You can try again.";
+        submitBtn.disabled = false;
+      });
+    }
+
+    // ======= Intro handling =======
+    document.querySelectorAll('.choice').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.choice').forEach(b=>b.setAttribute('aria-pressed','false'));
+        btn.setAttribute('aria-pressed','true');
+        participantCategory = btn.getAttribute('data-cat');
+        startBtn.disabled = false;
+      });
     });
 
+    startBtn.addEventListener('click', ()=>{
+      if(!participantCategory) return;
+      intro.classList.add('hide');
+      card.classList.remove('hide');
+      index=0; score=0; locked=false; history.length=0;
+      renderQuestion();
+    });
+
+    // ======= Keyboard =======
+    document.addEventListener('keydown', (e)=>{
+      if(!result.classList.contains('hide') || card.classList.contains('hide')) return;
+      if(['1','2','3'].includes(e.key)){
+        const idx = Number(e.key)-1;
+        const btn = optionsGrid.querySelectorAll('.option')[idx];
+        if(btn) btn.click();
+      } else if(e.key==='Enter'){
+        if(!nextBtn.disabled) nextBtn.click();
+      } else if(e.key.toLowerCase()==='s'){
+        skipBtn.click();
+      }
+    });
+
+    // ======= Buttons =======
     nextBtn.addEventListener('click', nextQuestion);
     skipBtn.addEventListener('click', skipQuestion);
     restartBtn.addEventListener('click', restart);
     reviewBtn.addEventListener('click', renderReview);
+    submitBtn.addEventListener('click', ()=>{ if(currentRun) submitResults(currentRun); });
 
     // High-contrast toggle
     contrastBtn.addEventListener('click', () => {
       document.body.classList.toggle('hc');
       contrastBtn.textContent = document.body.classList.contains('hc') ? 'Standard contrast' : 'High contrast';
     });
-
-    renderQuestion();
   </script>
 </body>
 </html>
+
