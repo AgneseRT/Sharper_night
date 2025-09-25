@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fondamenti di Fisica Medica — Quiz a 3 opzioni</title>
+  <title>Interactive 3-Option Quiz (Text + Image Mixed)</title>
   <style>
     :root {
       --bg:#0b0f1a; --card:#0b1220; --text:#ffffff; --muted:#dbe2ea; --ok:#22c55e; --err:#ef4444; --pri:#1d4ed8; --border:rgba(255,255,255,.2); --surface:rgba(255,255,255,.08);
@@ -59,6 +59,7 @@
 
     .toggle{display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; background:rgba(255,255,255,.08); border:1px solid var(--border); cursor:pointer; font-weight:700}
 
+    /* Intro card */
     .intro-card{padding:18px}
     .choices{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
     .choice{padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--border); cursor:pointer; font-weight:700}
@@ -75,51 +76,51 @@
         <div class="muted" id="progressLabel">Metti alla prova le tue conoscenze</div>
       </div>
       <div style="display:flex; align-items:center; gap:10px;">
-        <button id="contrastBtn" class="toggle" title="Cambia contrasto">Alto contrasto</button>
-        <div class="progress" aria-label="Progresso quiz"><div id="progressBar"></div></div>
+        <button id="contrastBtn" class="toggle" title="Toggle high-contrast">High contrast</button>
+        <div class="progress" aria-label="Quiz progress"><div id="progressBar"></div></div>
       </div>
     </header>
 
     <main>
-      <!-- INTRO -->
+      <!-- INTRO: choose category -->
       <div id="intro" class="intro-card">
-        <div class="question">Parlaci di te: qual è il tuo background?</div>
-        <div class="helper">Il quiz è totalmente anonimo.</div>
+        <div class="question">Parlaci di te: qual è il tuo background</div>
+        <div class="helper">Il quiz è totalmente anonimo, non barare ;) </div>
         <div class="choices" role="group" aria-label="Background">
-          <button class="choice" data-cat="Medicina" aria-pressed="false">Medicina</button>
+          <button class="choice" data-cat="Medicine" aria-pressed="false">Medicina</button>
           <button class="choice" data-cat="STEM" aria-pressed="false">Lauree STEM</button>
-          <button class="choice" data-cat="Altro" aria-pressed="false">Altro</button>
+          <button class="choice" data-cat="Other" aria-pressed="false">Altro</button>
         </div>
         <div class="row" style="margin-top:16px">
-          <span class="small">Alla fine potrai decidere se inviarci i tuoi risultati.</span>
-          <button id="startBtn" class="btn primary" disabled>Inizia il quiz</button>
+          <span class="small">Alla fine potrai decidere se inviarci i tuoi risultati (ci farebbe molto piacere)</span>
+          <button id="startBtn" class="btn primary" disabled>Start Quiz</button>
         </div>
       </div>
 
       <!-- QUIZ -->
       <div id="card" class="hide">
-        <div class="question" id="questionText">Caricamento…</div>
+        <div class="question" id="questionText">Loading...</div>
         <div class="note" id="questionNote"></div>
-        <div class="grid" id="optionsGrid" role="group" aria-label="Risposte"></div>
+        <div class="grid" id="optionsGrid" role="group" aria-label="Answers"></div>
         <div class="feedback" id="feedback"></div>
         <div class="row">
-          <span class="pill" id="scorePill">Punteggio: 0</span>
+          <span class="pill" id="scorePill">Score: 0</span>
           <div>
-            <button class="btn secondary" id="skipBtn">Salta</button>
-            <button class="btn primary" id="nextBtn" disabled>Avanti</button>
+            <button class="btn secondary" id="skipBtn">Skip</button>
+            <button class="btn primary" id="nextBtn" disabled>Next</button>
           </div>
         </div>
       </div>
 
-      <!-- RISULTATO -->
+      <!-- RESULT -->
       <div id="result" class="hide">
-        <h2 style="margin:0 0 8px 0">Fatto! 🎉</h2>
+        <h2 style="margin:0 0 8px 0">Ben fatto! 🎉</h2>
         <p class="muted" id="resultSummary"></p>
 
         <div class="row" style="margin-top: 16px;">
-          <button class="btn primary" id="submitBtn">Invia i miei risultati</button>
-          <button class="btn secondary" id="reviewBtn">Rivedi le risposte</button>
-          <button class="btn secondary" id="restartBtn">Ricomincia il quiz</button>
+          <button class="btn primary" id="submitBtn">Submit my results</button>
+          <button class="btn secondary" id="reviewBtn">Review answers</button>
+          <button class="btn secondary" id="restartBtn">Restart quiz</button>
         </div>
         <p class="small" id="submitStatus" style="margin-top:8px"></p>
 
@@ -128,16 +129,16 @@
     </main>
 
     <footer>
-      <span class="muted">Suggerimento: clicca o usa i tasti 1/2/3 per rispondere.</span>
-      <span class="muted">Buona fortuna!</span>
+      <span class="muted">Tip: Scegli una risposta fra quelle proposte</span>
+      <span class="muted">Good luck</span>
     </footer>
   </div>
 
   <script>
-    // ======= CONFIG: inserisci qui l'URL /exec dello Script Google =======
-    const SUBMIT_URL = "YOUR_APPS_SCRIPT_EXEC_URL_HERE";
+    // ======= CONFIG: set this to your webhook / Apps Script URL =======
+    const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbwgDcVhgvnL2eL9Lw6BmWDXGtTjNyzRxSWTpUN8DVlcGofbXfvAukd11_RQarJMDPLg/exec"; // e.g. "https://script.google.com/macros/s/XXXX/exec"
 
-    // ======= DOMANDE =======
+    // ======= QUESTIONS =======
     const QUESTIONS = [
       {
         prompt: "Quale di queste tecniche usa radiazioni ionizzanti?",
@@ -168,7 +169,7 @@
       },
       {
         prompt: "Quale delle seguenti immagini è una TC?",
-        note: "Esempio con immagini",
+        note: "Image options example",
         options: [
           { text: "A", img: "A.png", correct: true },
           { text: "B", img: "B.png", correct: false },
@@ -186,7 +187,7 @@
       },
       {
         prompt: "In PET si rivelano principalmente…",
-        note: "Medicina nucleare",
+        note: "Nucleare in medicina",
         options: [
           { text: "Coppie di fotoni gamma da annichilazione positrone-elettrone", correct: true },
           { text: "Onde ultrasonore riflesse", correct: false },
@@ -203,8 +204,8 @@
         ]
       },
       {
-        prompt: "Quale delle seguenti immagini è stata acquisita tramite raggi X?",
-        note: "Esempio immagini 2",
+        prompt: "Quale delle seguenti immagini è stata acquisita tramite raggi-X?",
+        note: "Image options example 2",
         options: [
           { text: "A", img: "RX.png", correct: true },
           { text: "B", img: "CT.png", correct: false },
@@ -239,22 +240,22 @@
         ]
       },
       {
-        prompt: "Qual è una controindicazione assoluta alla RM?",
+        prompt: "Quale è una controindicazione assoluta alla RM?",
         note: "Sicurezza in RM",
         options: [
-          { text: "Pacemaker non compatibile con RM", correct: true },
+          { text: "Pacemaker", correct: true },
           { text: "Protesi in titanio", correct: false },
           { text: "Otturazioni dentarie", correct: false },
         ]
       },
     ];
 
-    // ======= STATO =======
+    // ======= State =======
     let index = 0; let score = 0; let locked = false; const history = [];
     let participantCategory = null;
-    let currentRun = null;
+    let currentRun = null; // last completed attempt
 
-    // ======= ELEMENTI =======
+    // ======= Elements =======
     const progressLabel = document.getElementById('progressLabel');
     const progressBar   = document.getElementById('progressBar');
     const questionText  = document.getElementById('questionText');
@@ -276,15 +277,15 @@
     const submitBtn     = document.getElementById('submitBtn');
     const submitStatus  = document.getElementById('submitStatus');
 
-    // ======= UTILITY =======
+    // ======= Utils =======
     function shuffle(arr){return arr.map(v=>({v,r:Math.random()})).sort((a,b)=>a.r-b.r).map(({v})=>v)}
     function updateProgress(){
-      progressLabel.textContent = `Domanda ${index+1} di ${QUESTIONS.length}`;
+      progressLabel.textContent = `Question ${index+1} of ${QUESTIONS.length}`;
       progressBar.style.width = `${(index/QUESTIONS.length)*100}%`;
-      scorePill.textContent = `Punteggio: ${score}`;
+      scorePill.textContent = `Score: ${score}`;
     }
 
-    // ======= RENDER =======
+    // ======= Render =======
     function renderQuestion(){
       locked = false; feedbackEl.textContent = ''; nextBtn.disabled = true; optionsGrid.innerHTML = '';
       const q = QUESTIONS[index];
@@ -314,21 +315,21 @@
         el.dataset.state = corr ? 'correct' : (el===btn ? 'wrong' : '');
       });
 
-      if(isCorrect){feedbackEl.textContent='Corretto!'; feedbackEl.className='feedback correct'; score++;}
+      if(isCorrect){feedbackEl.textContent='Correct!'; feedbackEl.className='feedback correct'; score++;}
       else{
         const q=QUESTIONS[index];
-        const corrLabel=q.options.find(o=>o.correct)?.text||'la risposta corretta';
-        feedbackEl.textContent=`Quasi! Corretto: ${corrLabel}`;
+        const corrLabel=q.options.find(o=>o.correct)?.text||'the correct answer';
+        feedbackEl.textContent=`Not quite. Correct: ${corrLabel}`;
         feedbackEl.className='feedback incorrect';
       }
 
       history.push({qIndex:index, selected:Number(btn.getAttribute('data-idx')), correct:isCorrect});
-      scorePill.textContent = `Punteggio: ${score}`; nextBtn.disabled = false;
+      scorePill.textContent = `Score: ${score}`; nextBtn.disabled = false;
       progressBar.style.width = `${((index+1)/QUESTIONS.length)*100}%`;
     }
 
     function nextQuestion(){ if(index < QUESTIONS.length-1){ index++; renderQuestion(); } else { showResult(); } }
-    function skipQuestion(){ if(locked) return; history.push({qIndex:index, selected:null, correct:false, skipped:true}); nextQuestion(); }
+    function skipQuestion(){ if(locked) return; history.push({qIndex:index, selected:null, correct:false}); nextQuestion(); }
 
     function renderReview(){
       const parts = history.map((h,i)=>{
@@ -339,79 +340,90 @@
         const status=h.correct?'✅':(h.skipped?'⏭️':'❌');
         return `<div style="padding:10px 12px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px;">
           <div style="font-weight:800">Q${i+1}. ${q.prompt}</div>
-          <div class="muted">Tua risposta: <b>${selText}</b> • Corretta: <b>${corrText}</b> ${status}</div>
+          <div class="muted">Your answer: <b>${selText}</b> • Correct: <b>${corrText}</b> ${status}</div>
         </div>`;
       }).join('');
-      reviewBox.innerHTML = parts || '<div class="muted">Nessuna risposta da rivedere.</div>';
+      reviewBox.innerHTML = parts || '<div class="muted">No answers to review.</div>';
       reviewBox.classList.remove('hide');
     }
 
     function showResult(){
       card.classList.add('hide'); result.classList.remove('hide');
-      resultSummary.textContent = `Background: ${participantCategory} • Punteggio: ${score}/${QUESTIONS.length}.`;
-      progressLabel.textContent = 'Quiz completato'; progressBar.style.width = '100%';
-      currentRun = saveRun(); // salva localmente questa esecuzione
+      resultSummary.textContent = `Category: ${participantCategory} • You scored ${score} out of ${QUESTIONS.length}.`;
+      progressLabel.textContent = 'Quiz complete'; progressBar.style.width = '100%';
+
+      // Save this attempt locally and keep a handle to it
+      currentRun = saveRun();
+
+      // Reset submit UI for this run
       submitStatus.textContent = '';
       submitBtn.disabled = false;
     }
 
     function restart(){
+      // Back to intro to possibly pick a new category; previous attempts remain saved
       result.classList.add('hide'); reviewBox.classList.add('hide');
       intro.classList.remove('hide'); card.classList.add('hide');
-      progressLabel.textContent = 'Scegli il tuo background per iniziare';
+      progressLabel.textContent = 'Choose your background to start';
       progressBar.style.width = '0%';
       index=0; score=0; locked=false; history.length=0;
-      scorePill.textContent = 'Punteggio: 0';
+      scorePill.textContent = 'Score: 0';
     }
 
-    // ======= PERSISTENZA (locale) =======
+    // ======= Persistence =======
     const STORAGE_KEY = 'quizRuns_v1';
     function getAllRuns(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch{ return []; } }
     function setAllRuns(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
 
     function saveRun(){
       const timestamp = new Date().toISOString();
-      const runId = (crypto && crypto.randomUUID) ? crypto.randomUUID()
-                  : 'run_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-
-      const perQuestion = history.map(h => ({
-        qIndex: h.qIndex,
-        selectedIndex: (h.selected == null ? '' : h.selected)
-      }));
-
+      const perQuestion = history.map(h=>{
+        const q = QUESTIONS[h.qIndex];
+        return {
+          qIndex: h.qIndex,
+          prompt: q.prompt,
+          selectedIndex: h.selected,
+          correct: !!h.correct
+        };
+      });
       const run = {
-        runId,
         timestamp,
         category: participantCategory,
         score,
         perQuestion
       };
-
       const all = getAllRuns(); all.push(run); setAllRuns(all);
-      return run;
+      return run; // return for submission
     }
 
-    // ======= INVIO RISULTATI (webhook facoltativo) =======
+    // ======= Submission (optional webhook) =======
     function submitResults(run){
-      if(!SUBMIT_URL){ alert("Nessun SUBMIT_URL configurato nel codice."); return; }
+      if(!SUBMIT_URL){
+        alert("No SUBMIT_URL set in the code — configure it to receive results.");
+        return;
+      }
       submitBtn.disabled = true;
-      submitStatus.textContent = "Invio in corso...";
+      submitStatus.textContent = "Submitting...";
+      const payload = {
+        timestamp: run.timestamp,
+        category: run.category,
+        score: run.score,
+        perQuestion: run.perQuestion
+      };
       fetch(SUBMIT_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(run),
-        mode: 'no-cors' // semplice: la richiesta arriva anche senza CORS espliciti
+        body: JSON.stringify(payload),
+        mode: 'no-cors' // keeps it simple; your endpoint handles CORS
       }).then(()=>{
-        submitStatus.textContent = "✅ Risultati inviati!";
-        submitBtn.textContent = "Inviato";
-        submitBtn.disabled = true;
+        submitStatus.textContent = "✅ Results submitted!";
       }).catch(()=>{
-        submitStatus.textContent = "⚠️ Invio non riuscito. Riprova.";
+        submitStatus.textContent = "⚠️ Submission failed. You can try again.";
         submitBtn.disabled = false;
       });
     }
 
-    // ======= INTRO =======
+    // ======= Intro handling =======
     document.querySelectorAll('.choice').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         document.querySelectorAll('.choice').forEach(b=>b.setAttribute('aria-pressed','false'));
@@ -429,7 +441,7 @@
       renderQuestion();
     });
 
-    // ======= TASTIERA =======
+    // ======= Keyboard =======
     document.addEventListener('keydown', (e)=>{
       if(!result.classList.contains('hide') || card.classList.contains('hide')) return;
       if(['1','2','3'].includes(e.key)){
@@ -443,17 +455,17 @@
       }
     });
 
-    // ======= BOTTONI =======
+    // ======= Buttons =======
     nextBtn.addEventListener('click', nextQuestion);
     skipBtn.addEventListener('click', skipQuestion);
     restartBtn.addEventListener('click', restart);
     reviewBtn.addEventListener('click', renderReview);
     submitBtn.addEventListener('click', ()=>{ if(currentRun) submitResults(currentRun); });
 
-    // Toggle contrasto
+    // High-contrast toggle
     contrastBtn.addEventListener('click', () => {
       document.body.classList.toggle('hc');
-      contrastBtn.textContent = document.body.classList.contains('hc') ? 'Contrasto standard' : 'Alto contrasto';
+      contrastBtn.textContent = document.body.classList.contains('hc') ? 'Standard contrast' : 'High contrast';
     });
   </script>
 </body>
